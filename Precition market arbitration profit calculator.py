@@ -1,69 +1,113 @@
-def calcul_arbitrage(yes1, yes2, capital_total):
-    """
-    yes1, yes2 : cotes en % (prix du contrat YES sur chaque marché)
-    capital_total : capital total disponible en dollars
-    """
+# ===========================================================
+# 🔮 ARBITRAGE CALCULATOR — LOOP EDITION FOR MONSEIGNEUR 👑
+# Runs continuously until exit code is entered (default: 999)
+# ===========================================================
 
-    # Conversion en prix décimaux (0-1)
+def arbitrage_calc(yes1, yes2, total_capital):
+
     p1 = yes1 / 100
     p2 = yes2 / 100
 
+    print("\n==========================================================")
+    print(" 🔮  ARBITRAGE CALCULATION BETWEEN TWO MARKETS  🔮")
+    print("==========================================================\n")
+
+    # Price summary
+    print("📊 PRICE SUMMARY")
+    print("----------------------------------------------------------")
+    print(f"   🟦 Market 1 YES price : {yes1:.2f}%")
+    print(f"   🟥 Market 2 YES price : {yes2:.2f}%")
+    print("----------------------------------------------------------\n")
+
+    # Two possible combinations
     scenarios = [
-        ("YES on market 1", p1, "NO on market 2", 1 - p2),
-        ("YES on market 2", p2, "NO on market 1", 1 - p1)
+        ("YES market 1", p1, "NO market 2", 1 - p2),
+        ("YES market 2", p2, "NO market 1", 1 - p1),
     ]
 
-    arbitrages = []
+    profitable = None
+    for yes_desc, yes_price, no_desc, no_price in scenarios:
+        if yes_price + no_price < 1:
+            profitable = (yes_desc, yes_price, no_desc, no_price, yes_price + no_price)
+            break
 
-    for desc_yes, price_yes, desc_no, price_no in scenarios:
-        total_cost = price_yes + price_no
-        if total_cost < 1:
-            profit_ratio = 1 - total_cost
-            roi = profit_ratio / total_cost
+    if profitable is None:
+        print("⚠️ No arbitrage opportunity exists.\n")
+        return
 
-            # Proportion optimale des mises
-            # On répartit le capital proportionnellement aux coûts pour que le payout soit identique
-            part_yes = price_yes / total_cost
-            part_no = price_no / total_cost
+    yes_desc, yes_price, no_desc, no_price, cost = profitable
 
-            mise_yes = capital_total * part_yes
-            mise_no = capital_total * part_no
+    print("✅ PROFITABLE ARBITRAGE FOUND!")
+    print(f"   ➝ Combination: {yes_desc} + {no_desc}")
+    print(f"   ➝ Combined cost: {cost:.3f}\n")
 
-            payout = capital_total / total_cost  # Montant récupéré garanti
-            profit_total = payout - capital_total
-            rendement_pct = (profit_total / capital_total) * 100
+    # Optimal stake split
+    S_yes = total_capital * (yes_price / cost)
+    S_no  = total_capital * (no_price  / cost)
 
-            arbitrages.append({
-                "combo": f"{desc_yes} ({price_yes*100:.1f}%) + {desc_no} ({price_no*100:.1f}%)",
-                "mise_yes": mise_yes,
-                "mise_no": mise_no,
-                "rendement_pct": rendement_pct,
-                "profit": profit_total
-            })
+    # Payouts
+    gain_yes = S_yes * (1 / yes_price)
+    gain_no  = S_no  * (1 / no_price)
 
-    # Affichage des résultats
-    if not arbitrages:
-        print("\n⚠️ No arbitration detected : the combinations cost ≥ 1 $.")
-    else:
-        print("\n=== POSSIBLE ARBITRATIONS ===")
-        for arb in arbitrages:
-            print(f"\nCombination : {arb['combo']}")
-            print(f"→ Bet on the first market : {arb['mise_yes']:.2f} $")
-            print(f"→ Bet on the second market : {arb['mise_no']:.2f} $")
-            print(f"→ Profit : {arb['profit']:.2f} $")
-            print(f"→ Return : {arb['rendement_pct']:.2f} %")
-            print("!!! Verify that the platform fees are not too high and that the market has enough liquidity !!!")
+    profit_yes = gain_yes - total_capital
+    profit_no  = gain_no  - total_capital
 
-# =====================
-# Exemple d'utilisation
-# =====================
-yes1=0
-while yes1!=2703:
-    if yes1!=2703:
-        yes1 = float(input("Enter the odds (%) of market 1 for 'YES' (enter 2703 to leave the program): "))
-        yes2 = float(input("Enter the odds (%) of market 2 for 'YES' : "))
-        capital_total = float(input("Betting amount ($) : "))
+    guaranteed_profit = min(profit_yes, profit_no)
+    guaranteed_return_pct = (guaranteed_profit / total_capital) * 100
 
-        calcul_arbitrage(yes1, yes2, capital_total)
-    else:
-        print("You left the program")
+    print("==========================================================")
+    print(" 💰 OPTIMAL STAKES")
+    print("==========================================================")
+    print(f"   🟦 {yes_desc:<18} : {S_yes:.2f} $")
+    print(f"   🟥 {no_desc:<18}  : {S_no:.2f} $")
+    print(f"\n   💵 Total capital used : {total_capital:.2f} $\n")
+
+    print("==========================================================")
+    print(" 🚀 GUARANTEED PROFIT & RETURN")
+    print("==========================================================")
+    print(f"   💵 Guaranteed Profit : +{guaranteed_profit:.2f} $")
+    print(f"   🌟 GUARANTEED RETURN : {guaranteed_return_pct:.2f} % 🌟\n")
+
+    print("==========================================================")
+    print(" 📎 DETAILS (compact)")
+    print("==========================================================")
+    print("   Formula: payout = stake × (100 / price%)\n")
+
+    print(f"   ➝ If YES wins:  profit = {S_yes:.2f} × (100 / {yes_price*100:.2f}) − {total_capital:.2f}")
+    print(f"                     = {profit_yes:.2f} $\n")
+
+    print(f"   ➝ If NO wins :  profit = {S_no:.2f} × (100 / {no_price*100:.2f}) − {total_capital:.2f}")
+    print(f"                     = {profit_no:.2f} $\n")
+
+    print("   (Guaranteed profit = minimum of the two outcomes)")
+    print("==========================================================\n")
+
+
+# ===========================================================
+# 🔁 MAIN LOOP
+# ===========================================================
+EXIT_CODE = "999"
+
+while True:
+    print("\n🔢 Enter market parameters (type 999 to exit):\n")
+
+    yes1_input = input(" 👉 YES price market 1 (%) : ")
+    if yes1_input == EXIT_CODE:
+        print("\n👋 Exiting program. Goodbye, Monseigneur 👑\n")
+        break
+
+    yes2_input = input(" 👉 YES price market 2 (%) : ")
+    if yes2_input == EXIT_CODE:
+        print("\n👋 Exiting program. Goodbye, Monseigneur 👑\n")
+        break
+
+    capital_input = input(" 💵 Total capital invested ($) : ")
+    if capital_input == EXIT_CODE:
+        print("\n👋 Exiting program. Goodbye, Monseigneur 👑\n")
+        break
+
+    yes1 = float(yes1_input)
+    yes2 = float(yes2_input)
+    total_capital = float(capital_input)
+
+    arbitrage_calc(yes1, yes2, total_capital)
