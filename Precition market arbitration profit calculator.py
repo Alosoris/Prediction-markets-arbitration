@@ -93,17 +93,17 @@ while True:
 
     yes1_input = input(" 👉 YES price market 1 (%) : ")
     if yes1_input == EXIT_CODE:
-        print("\n👋 Exiting program. Goodbye, Monseigneur 👑\n")
+        print("\n👋 Exiting program. Goodbye\n")
         break
 
     yes2_input = input(" 👉 YES price market 2 (%) : ")
     if yes2_input == EXIT_CODE:
-        print("\n👋 Exiting program. Goodbye, Monseigneur 👑\n")
+        print("\n👋 Exiting program. Goodbye\n")
         break
 
     capital_input = input(" 💵 Total capital invested ($) : ")
     if capital_input == EXIT_CODE:
-        print("\n👋 Exiting program. Goodbye, Monseigneur 👑\n")
+        print("\n👋 Exiting program. Goodbye\n")
         break
 
     yes1 = float(yes1_input)
